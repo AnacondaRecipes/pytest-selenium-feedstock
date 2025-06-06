@@ -1,6 +1,6 @@
 {% set name = "pytest-selenium" %}
-{% set version = "2.0.1" %}
-{% set hash = "a0008e6dce7c68501369c1c543420f5906ffada493d4ff0c5d9d5ccdf4022203" %}
+{% set version = "4.1.0" %}
+{% set hash = "b0a4e1f27750cde631c513c87ae4863dcf9e180e5a1d680a66077da8a669156c" %}
 
 package:
   name: {{ name }}
@@ -8,30 +8,33 @@ package:
 
 source:
   fn: {{ name }}-{{ version }}.tar.gz
-  url: https://pypi.io/packages/source/p/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  url: https://pypi.org/packages/source/p/{{ name }}/pytest_selenium-{{ version }}.tar.gz
   sha256: {{ hash }}
 
 build:
   noarch: python
   number: 0
   script: python -m pip install . --no-deps --ignore-installed
+  skip: true  # [py<38]
 
 requirements:
   host:
     - pip
-    - python >=3.6
-    - setuptools
+    - python
     - setuptools_scm
-
+    - hatch-vcs >=0.3
+    - hatchling >=1.13
   run:
-    - python >=3.6
-    - pytest >=5.0
-    - pytest-base-url
-    - pytest-html >=1.14.0
-    - pytest-variables >=1.5.0
-    - selenium >=3.0.0
-    - requests
-    - tenacity 6.*
+    - python
+    - pytest >=6.0.0
+    - pytest-base-url >=2.0.0
+    - pytest-html >=4.0.0
+    - pytest-variables >=2.0.0
+    - selenium >=4.10.0
+    - requests >=2.26.0
+    - tenacity >=6.0.0
+  run_constrained:
+    - appium-python-client >=1.0.0
 
 test:
   imports:
@@ -39,7 +42,7 @@ test:
     - pytest_selenium.drivers
 
 about:
-  home: https://pypi.python.org/pypi/pytest-selenium
+  home: https://pypi.org/pypi/pytest-selenium
   license: MPL 2.0
   license_file: LICENSE
   summary: pytest-selenium is a plugin for py.test that provides support for running Selenium based tests.
