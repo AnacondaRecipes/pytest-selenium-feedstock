@@ -1,48 +1,83 @@
 {% set name = "pytest-selenium" %}
-{% set version = "2.0.1" %}
-{% set hash = "a0008e6dce7c68501369c1c543420f5906ffada493d4ff0c5d9d5ccdf4022203" %}
+{% set version = "4.1.0" %}
 
 package:
-  name: {{ name }}
+  name: {{ name|lower }}
   version: {{ version }}
 
 source:
-  fn: {{ name }}-{{ version }}.tar.gz
-  url: https://pypi.io/packages/source/p/{{ name }}/{{ name }}-{{ version }}.tar.gz
-  sha256: {{ hash }}
+  url: https://pypi.org/packages/source/{{ name[0] }}/{{ name }}/{{ name|replace("-", "_") }}-{{ version }}.tar.gz
+  sha256: b0a4e1f27750cde631c513c87ae4863dcf9e180e5a1d680a66077da8a669156c
 
 build:
-  noarch: python
   number: 0
-  script: python -m pip install . --no-deps --ignore-installed
+  skip: true  # [py<310]
+  script: {{ PYTHON }} -m pip install .  --no-deps --no-build-isolation --ignore-installed -vv
 
 requirements:
   host:
     - pip
-    - python >=3.6
-    - setuptools
-    - setuptools_scm
-
+    - python
+    - hatch-vcs >=0.3
+    - hatchling >=1.13
   run:
-    - python >=3.6
-    - pytest >=5.0
-    - pytest-base-url
-    - pytest-html >=1.14.0
-    - pytest-variables >=1.5.0
-    - selenium >=3.0.0
-    - requests
-    - tenacity 6.*
+    - python
+    - pytest >=6.0.0
+    - pytest-base-url >=2.0.0
+    - pytest-html >=4.0.0
+    - pytest-variables >=2.0.0
+    - requests >=2.26.0
+    - selenium >=4.10.0
+    - tenacity >=6.0.0
+  run_constrained:
+    - appium-python-client >=1.0.0
+
+# AssertionError: passed
+# ConnectionRefusedError: [Errno 61] Connection refused
+{% set tests_to_skip = "--deselect=testing/test_chrome.py::test_launch" %}
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_edge.py::test_launch_legacy" %}  # [win] 
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_edge.py::test_launch[chromium]" %}  # [win] 
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_edge.py::test_launch[legacy]" %}  # [win] 
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_testingbot.py::test_invalid_credentials_env[TESTINGBOT_KEY-TESTINGBOT_SECRET]" %}  # [osx] 
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_testingbot.py::test_invalid_credentials_env[TESTINGBOT_PSW-TESTINGBOT_USR]" %}  # [osx] 
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_testingbot.py::test_invalid_credentials_file" %}  # [osx] 
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_chrome.py::test_options" %}
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_driver.py::test_driver_quit" %}
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_driver.py::test_xdist" %}
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_firefox.py::test_launch" %}
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_firefox.py::test_launch_case_insensitive" %}
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_firefox.py::test_profile" %}
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_firefox.py::test_preferences_marker" %}
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_webdriver.py::test_event_listening_webdriver" %}
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_driver.py::test_driver_retry_pass" %}
+{% set tests_to_skip = tests_to_skip + " --deselect=testing/test_driver.py::test_driver_retry_fail" %}
 
 test:
+  source_files:
+    - testing 
   imports:
     - pytest_selenium
     - pytest_selenium.drivers
+  requires:
+    - pip
+    - pytest
+  commands:
+    - pip check
+    - pytest testing -v {{ tests_to_skip }}
 
 about:
   home: https://pypi.python.org/pypi/pytest-selenium
-  license: MPL 2.0
+  license: MPL-2.0
+  license_family: Other
   license_file: LICENSE
   summary: pytest-selenium is a plugin for py.test that provides support for running Selenium based tests.
+  description: |
+    The pytest-selenium plugin provides a function scoped selenium fixture for your tests.
+    This means that any test with selenium as an argument will cause a browser instance
+    to be invoked. The browser may run locally or remotely depending on your configuration,
+    and may even run headless.
+  doc_url: https://pytest-selenium.readthedocs.io
+  dev_url: https://github.com/pytest-dev/pytest-selenium
 
 extra:
   recipe-maintainers:
